@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Lịch Sử 10 - 50 Câu Trắc Nghiệm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .option-btn { transition: all 0.2s ease-in-out; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .correct { background-color: #10b981 !important; color: white !important; border-color: #10b981 !important; }
+        .incorrect { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .selected { border-color: #3b82f6; background-color: #eff6ff; }
+        /* Ẩn thanh cuộn nhưng vẫn cuộn được */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col">
+
+    <header class="bg-blue-700 text-white shadow-md z-10 shrink-0">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-landmark"></i> Đề Cương Lịch Sử 10
+            </h1>
+            <div class="flex bg-blue-800 rounded-lg p-1">
+                <button id="mode-practice" class="px-4 py-2 rounded-md bg-white text-blue-700 font-semibold shadow transition" onclick="setMode('practice')">
+                    <i class="fas fa-dumbbell mr-1"></i> Luyện tập
+                </button>
+                <button id="mode-test" class="px-4 py-2 rounded-md text-white hover:bg-blue-600 font-semibold transition" onclick="setMode('test')">
+                    <i class="fas fa-file-alt mr-1"></i> Kiểm tra
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow overflow-y-auto p-4 md:p-8">
+        <div class="container mx-auto max-w-4xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700" id="quiz-title">Chế độ Luyện Tập</h2>
+                    <p class="text-sm text-gray-500" id="quiz-desc">Chọn đáp án để xem kết quả ngay lập tức.</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm text-gray-500 block mb-1">Tiến độ</span>
+                    <span class="font-bold text-blue-600 text-lg" id="progress-text">0 / 50</span>
+                </div>
+            </div>
+
+            <!-- Quiz Questions Container -->
+            <div id="questions-container" class="space-y-8">
+                <!-- Các câu hỏi sẽ được render ở đây bằng JS -->
+            </div>
+
+            <!-- Nút Nộp Bài (Chỉ hiện ở chế độ kiểm tra) -->
+            <div id="submit-section" class="mt-8 text-center hidden">
+                <button onclick="submitTest()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
+                    <i class="fas fa-check-circle mr-2"></i>Nộp Bài & Chấm Điểm
+                </button>
+            </div>
+            
+            <!-- Nút Làm lại (Sau khi nộp bài) -->
+            <div id="restart-section" class="mt-8 text-center hidden">
+                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                    <h3 class="text-xl font-bold mb-2">Kết quả của bạn: <span id="final-score">0</span>/50</h3>
+                    <p>Hãy làm lại để kiểm tra xem bạn đã nhớ chưa nhé! (Câu hỏi và đáp án sẽ được đảo ngẫu nhiên)</p>
+                </div>
+                <button onclick="restartQuiz(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">
+                    <i class="fas fa-random mr-2"></i>Đảo câu hỏi & Làm lại
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Dữ liệu 50 câu hỏi trắc nghiệm
+        const rawQuestions = [
+            { id: 1, q: "Sự kiện “Ngày 2/9/1945, tại Quảng trường Ba Đình (Hà Nội), Chủ tịch Hồ Chí Minh đọc bản Tuyên ngôn độc lập, khai sinh ra nước Việt Nam Dân chủ Cộng hòa” là một hiện thực lịch sử vì lí do nào sau đây?", opts: ["A. Sự kiện này có thật, đã diễn ra, gắn với một bối cảnh lịch sử cụ thể.", "B. Là kết quả nghiên cứu của Sử học, đã làm rõ ý nghĩa của sự kiện.", "C. Sự kiện này đã trở thành một bước ngoặt vĩ đại đối với lịch sử dân tộc.", "D. Đã đánh dấu kết thúc hơn 80 năm thực dân Pháp cai trị Việt Nam."], ans: 0 },
+            { id: 2, q: "“Lịch sử xã hội loài người là lịch sử của quần chúng nhân dân, là lịch sử của những phương thức sản xuất kế tiếp nhau” là nhận thức của Sử học", opts: ["A. Thời cổ đại.", "B. Thời phong kiến.", "C. Mác – xít.", "D. Tư sản."], ans: 2 },
+            { id: 3, q: "Việc nhận thức về đối tượng nghiên cứu của Sử học sẽ đúng nếu cho rằng: Sử học là một khoa học nghiên cứu các sự kiện, hiện tượng của xã hội loài người từ khi", opts: ["A. Con người xuất hiện.", "B. Xuất hiện chữ viết.", "C. Xuất hiện nhà nước.", "D. Con người biết ghi chép."], ans: 0 },
+            { id: 4, q: "Yếu tố nào dưới đây tạo nên “khoảng cách” giữa hiện thực lịch sử và nhận thức lịch sử?", opts: ["A. Tính chủ quan và luôn biến đổi của hiện thực lịch sử.", "B. Quy luật phát triển của các sự kiện, hiện tượng lịch sử.", "C. Mục đích và thái độ của người nghiên cứu lịch sử.", "D. Sự thay đổi theo thời gian của hiện thực lịch sử."], ans: 2 },
+            { id: 5, q: "Sử liệu nào sau đây không phải là sử liệu gốc?", opts: ["A. Châu bản triều Nguyễn.", "B. Đại cương lịch sử Việt Nam.", "C. Rìu tay núi Đọ (Thanh Hóa).", "D. Trống đồng Đông Sơn."], ans: 1 },
+            { id: 6, q: "Điểm khác biệt cơ bản giữa hiện thực lịch sử và nhận thức lịch sử là", opts: ["A. Hiện thực lịch sử thuộc về quá khứ, còn nhận thức lịch sử thuộc về hiện tại.", "B. Hiện thực lịch sử là những gì đã xảy ra, còn nhận thức lịch sử là sự hiểu biết của con người về những gì đã xảy ra.", "C. Hiện thực lịch sử luôn chính xác, còn nhận thức lịch sử luôn sai lệch.", "D. Hiện thực lịch sử chỉ dựa vào hiện vật, còn nhận thức lịch sử chỉ dựa vào tư liệu viết."], ans: 1 },
+            { id: 7, q: "Tại sao việc phê phán sử liệu có ý nghĩa quan trọng đối với nghiên cứu lịch sử?", opts: ["A. Loại bỏ tất cả những tư liệu không phù hợp với quan điểm của nhà sử học.", "B. Đánh giá độ tin cậy, nguồn gốc và giá trị của tư liệu trước khi sử dụng.", "C. Chứng minh rằng tư liệu hiện vật luôn đáng tin hơn tư liệu chữ viết.", "D. Giúp nhà sử học có thể lựa chọn kết luận theo ý muốn."], ans: 1 },
+            { id: 8, q: "Điểm nào sau đây thể hiện tính chủ quan của nhận thức lịch sử?", opts: ["A. Nhận thức lịch sử được hình thành thông qua quá trình con người tìm hiểu và giải thích quá khứ.", "B. Nhận thức lịch sử chính là toàn bộ những gì đã xảy ra.", "C. Nhận thức lịch sử tồn tại độc lập với con người.", "D. Nhận thức lịch sử không phụ thuộc vào nguồn tư liệu."], ans: 0 },
+            { id: 9, q: "Phương pháp Sử học nào sau đây nghiên cứu sự vật, hiện tượng theo các giai đoạn phát triển cụ thể của nó (hình thành, phát triển và tiêu vong)?", opts: ["A. Phương pháp logic.", "B. Phương pháp liên ngành.", "C. Phương pháp lịch sử.", "D. Phương pháp đồng đại."], ans: 2 },
+            { id: 10, q: "Chọn từ thích hợp điền vào chỗ chấm để hoàn thành khái niệm sau: “…… là toàn bộ những hình thức khác nhau của tư liệu lịch sử, chứa đựng những thông tin về quá khứ của loài người”.", opts: ["A. Dã sử.", "B. Lịch sử.", "C. Sử học.", "D. Sử liệu."], ans: 3 },
+            { id: 11, q: "“Sử để ghi việc, mà việc hay hoặc dở đều dùng làm gương răn cho đời sau”. Nhận định trên đề cập đến ý nghĩa nào sau đây của tri thức lịch sử?", opts: ["A. Giữ gìn và phát huy các giá trị văn hóa truyền thống.", "B. Giúp con người nhận thức sâu sắc về cội nguồn, bản sắc của dân tộc.", "C. Giúp con người đúc kết bài học kinh nghiệm từ quá khứ cho hiện tại.", "D. Giúp con người dự báo chính xác về những sự kiện trong tương lai."], ans: 2 },
+            { id: 12, q: "Để khôi phục lại hiện thực lịch sử về các trận đánh trên sông Bạch Đằng, các nhà sử học chủ yếu sử dụng thành quả của những ngành khoa học nào sau đây?", opts: ["A. Tự nhiên và công nghệ.", "B. Nhân trắc học.", "C. Xã hội và nhân văn.", "D. Sinh học."], ans: 2 },
+            { id: 13, q: "Trong tiến trình học tập để làm giàu tri thức lịch sử, việc thu thập, xử lí thông tin và sử liệu cần phải tiến hành theo quy trình nào sau đây?", opts: ["A. Xác minh, đánh giá sử liệu → Lập thư mục → Chọn lọc, phân loại → Sưu tầm sử liệu.", "B. Lập thư mục → Sưu tầm sử liệu → Chọn lọc, phân loại → Xác minh, đánh giá sử liệu.", "C. Chọn lọc, phân loại → Sưu tầm sử liệu → Xác minh, đánh giá sử liệu → Lập thư mục.", "D. Sưu tầm sử liệu → Chọn lọc, phân loại → Xác minh, đánh giá sử liệu → Lập thư mục."], ans: 3 },
+            { id: 14, q: "Cho đoạn điền khuyết sau đây: “... rất rộng lớn và đa dạng. Những kiến thức lịch sử ở nhà trường chỉ là một phần nhỏ trong kho tàng ... của quốc gia, nhân loại. Muốn hiểu đầy đủ và đúng đắn về lịch sử cần có một quả trình lâu dài. Vì vậy, việc học tập, khám phá lịch sử suốt đời sẽ giúp mỗi người mở rộng và cập nhật kiến thức\".", opts: ["A. Hiện thực lịch sử.", "B. Nghiên cứu lịch sử.", "C. Nhận thức lịch sử.", "D. Tri thức lịch sử."], ans: 3 },
+            { id: 15, q: "Sử liệu đóng vai trò là cầu nối giữa hiện thực lịch sử và tri thức lịch sử. Thu thập, xử lí thông tin và sử liệu là những khâu quan trọng trong nghiên cứu cũng như học tập, tìm hiểu lịch sử, cần thực hiện theo quy trình khoa học, chặt chẽ. Khâu đầu tiên của quy trình này là", opts: ["A. Xác minh và đánh giá các nguồn sử liệu.", "B. Chọn lọc và phân loại các nguồn sử liệu.", "C. Sưu tầm và ghi chép thông tin nguồn sử liệu.", "D. Lập thư mục, danh mục sử liệu cần thu thập."], ans: 3 },
+            { id: 16, q: "Cần phải học tập và khám phá lịch sử vì học lịch sử giúp chúng ta", opts: ["A. Dự đoán được quy luật phát triển của vạn vật trên Trái Đất.", "B. Hiểu được cội nguồn của bản thân, gia đình, quê hương.", "C. Thay đổi được những sự kiện, hiện tượng xảy ra trong quá khứ.", "D. Sáng tạo và làm phong phú thêm hiện thực lịch sử."], ans: 1 },
+            { id: 17, q: "Thu thập sử liệu được hiểu là", opts: ["A. Quá trình tập hợp, tìm kiếm tài liệu tham khảo về đối tượng nghiên cứu, tìm hiểu lịch sử.", "B. Quá trình khảo sát, tìm kiếm, sưu tầm và tập hợp những thông tin liên quan đến đối tượng học tập, nghiên cứu, tìm hiểu lịch sử.", "C. Một khâu của quá trình thẩm định sử liệu.", "D. Công đoạn cuối cùng của nghiên cứu lịch sử."], ans: 1 },
+            { id: 18, q: "Nội dung nào sau đây không đúng về ý nghĩa của tri thức lịch sử đối với cuộc sống?", opts: ["A. Nhận thức sâu sắc về cội nguồn, về bản sắc của cá nhân và cộng đồng.", "B. Đúc kết và vận dụng thành công bài học kinh nghiệm trong cuộc sống.", "C. Đúc kết bài học kinh nghiệm, tránh lặp lại những sai lầm từ quá khứ.", "D. Khắc phục triệt để sự mâu thuẫn, bất đồng giữa các quốc gia, dân tộc."], ans: 3 },
+            { id: 19, q: "Việc học sinh ở trường phổ thông thường xuyên được tham gia các hoạt động học tập trải nghiệm hoặc ngoại khóa ngoài nhà trường dưới nhiều hình thức khác nhau là một biểu hiện của", opts: ["A. lao động sản xuất tại thực địa.", "B. khám phá tri thức suốt đời.", "C. nghiên cứu khoa học giáo dục.", "D. hội nhập quốc tế sâu rộng."], ans: 1 },
+            { id: 20, q: "Cho đoạn trích sau đây: “Dân ta phải biết sử ta...”. Nội dung nào sau đây phản ánh không đúng về ý nghĩa của đoạn trích trên?", opts: ["A. Sự cần thiết phải học tập và khám phá lịch sử suốt đời.", "B. Nhiều giá trị từ kiến thức lịch sử đem lại cho cuộc sống.", "C. Tiến trình thu thập, xử lí nguồn sử liệu để nghiên cứu.", "D. Việc kết nối kiến thức, bài học lịch sử vào cuộc sống."], ans: 2 },
+            { id: 21, q: "Năm nào UNESCO ghi danh Dân ca Quan họ là di sản văn hóa phi vật thể", opts: ["A. 2005.", "B. 2009.", "C. 2011.", "D. 2015."], ans: 1 },
+            { id: 22, q: "Mối quan hệ giữa Sử học và du lịch được thể hiện ở điểm nào sau đây?", opts: ["A. Du lịch cung cấp kinh phí để nhà sử học đi du lịch khắp thế giới.", "B. Tri thức lịch sử là nguồn tài nguyên quý giá.", "C. Cung cấp cơ sở khoa học cho việc bảo tồn và phát huy giá trị.", "D. Phục vụ cho mục tiêu phát triển bền vững trong tương lai."], ans: 2 },
+            { id: 23, q: "Trong bảo tồn và phát huy giá trị của di sản, yêu cầu quan trọng nhất đặt ra là gì?", opts: ["A. Đáp ứng yêu cầu quảng bá hình ảnh về đất nước, con người.", "B. Phải đảm bảo giá trị thẩm mĩ của di sản.", "C. Phục vụ nhu cầu phát triển kinh tế - xã hội.", "D. Phải đảm bảo giá trị lịch sử, văn hóa, khoa học vì sự phát triển bền vững."], ans: 3 },
+            { id: 24, q: "Ngày 24/11/2005, Thủ tướng lấy ngày 23/11 hằng năm là ngày Di sản Văn hóa VN nhằm giáo dục và phát huy truyền thống nào?", opts: ["A. Đoàn kết quyết tâm phấn đấu giữ vững những công trình văn hóa hiện đại.", "B. Trung thực, tự tôn dân tộc và ý thức trách nhiệm của công dân toàn cầu.", "C. Yêu nước, tự hào dân tộc, ý thức trách nhiệm trong việc bảo vệ di sản văn hóa.", "D. Phát huy sức mạnh đại đoàn kết dân tộc trong công tác tôn tạo di sản văn hóa."], ans: 2 },
+            { id: 25, q: "Bảo tồn và phát huy giá trị các di sản văn hóa là hoạt động", opts: ["A. Tìm kiếm, lưu giữ và bảo vệ các giá trị di sản.", "B. Phát triển và lan tỏa các giá trị di sản.", "C. Lưu giữ, bảo vệ và lan tỏa các giá trị của di sản.", "D. Quy hoạch, lưu giữ và bảo vệ các di sản."], ans: 2 },
+            { id: 26, q: "Việc sử học cung cấp những thông tin có giá trị và tin cậy liên quan đến di sản văn hoá, di sản thiên nhiên có vai trò gì?", opts: ["A. Là cơ sở cho công tác bảo tồn và phát huy giá trị của di sản.", "B. Định hướng cho việc xây dựng lại di sản.", "C. Là nền tảng quyết định cho việc quản lí di sản ở các cấp.", "D. Là cơ sở cho việc đào tạo hướng dẫn viên."], ans: 0 },
+            { id: 27, q: "Đâu là vai trò của công tác bảo tồn và phát huy giá trị di sản văn hóa vật thể?", opts: ["A. Góp phần lưu trữ và thực hành di sản từ thế hệ này sang thế hệ khác.", "B. Góp phần phát triển đa dạng sinh học và làm tăng giá trị của di sản.", "C. Tạo ra môi trường thuận lợi cho sự sinh sống và phát triển của các di sản.", "D. Hạn chế tác động tiêu cực của điều kiện tự nhiên và con người đến di sản."], ans: 0 },
+            { id: 28, q: "Ngành công nghiệp văn hóa nào sau đây cần thiết phải sử dụng chất liệu lịch sử trong quá trình phát triển?", opts: ["A. Xuất bản.", "B. Quảng cáo.", "C. Thủ công mĩ nghệ.", "D. Du lịch văn hóa."], ans: 3 },
+            { id: 29, q: "Sử học cung cấp tri thức, ý tưởng và cảm hứng sáng tạo cho một số ngành công nghiệp văn hóa thông qua", opts: ["A. Các nguồn sử liệu.", "B. Quan điểm lịch sử.", "C. Nghiên cứu lịch sử.", "D. Trình bày lịch sử."], ans: 0 },
+            { id: 30, q: "Hoạt động bảo tồn di sản phải đảm bảo những đặc điểm gì ?", opts: ["A. Đảm bảo tính nguyên trạng, tính xác thực, tính toàn vẹn, giá trị nổi bật.", "B. Đảm bảo tính nguyên trạng, giá trị nổi bật mà di tích lịch sử - văn hóa vốn có.", "C. Hiện vật, di tích cần được làm mới, tu bổ để hiện vật không bị mai một, xuống cấp.", "D. Đảm bảo di tích hiện vật còn nguyên vẹn, chưa được tu bổ."], ans: 0 },
+            { id: 31, q: "Về cơ bản, các nền văn minh của loài người xuất hiện vào thời điểm nào sau đây?", opts: ["A. Thời kì đầu tiên loài người.", "B. Nhà nước và chữ viết xuất hiện.", "C. Xuất hiện cách mạng công nghiệp.", "D. Công xã thị tộc mẫu hệ ra đời."], ans: 1 },
+            { id: 32, q: "Trái ngược với văn minh là trạng thái nào?", opts: ["A. Văn hóa.", "B. Dã man.", "C. Văn hiến.", "D. Văn vật."], ans: 1 },
+            { id: 33, q: "Ý nào sau đây phản ánh đúng khái niệm văn minh?", opts: ["A. Văn minh là tổng thể những giá trị vật chất và tinh thần do con người sáng tạo ra trong quá trình lịch sử.", "B. Văn minh là tổng thể những giá trị vật chất và tinh thần gắn liền với lịch sử loài người.", "C. Văn minh là tổng thể những giá trị vật chất và tinh thần do con người sáng tạo ra từ khi con người xuất hiện trên Trái Đất.", "D. Văn minh là trạng thái tiến bộ cả về giá trị vật chất và tinh thần của xã hội loài người."], ans: 3 },
+            { id: 34, q: "Những nền văn minh đầu tiên trên thế giới xuất hiện vào khoảng thời gian nào và ở đâu?", opts: ["A. Cuối thiên niên kỉ IV TCN ở khu vực châu Âu và châu Á.", "B. Giữa thiên niên kỉ IV TCN ở khu vực Đông Bắc châu Phi và Tây Á.", "C. Đầu thiên niên kỉ IV TCN ở khu vực châu Âu và châu Á.", "D. Cuối thiên niên kỉ IV TCN ở khu vực Đông Bắc châu Phi và Tây Á."], ans: 3 },
+            { id: 35, q: "Tôn giáo nào không được khởi nguồn từ Ấn Độ?", opts: ["A. Hồi giáo.", "B. Phật giáo.", "C. Hindu giáo.", "D. Bà La Môn giáo."], ans: 0 },
+            { id: 36, q: "Điều kiện nào sau đây quyết định đến sự ra đời của nền văn minh Ấn Độ cổ đại?", opts: ["A. Chữ viết ra đời dẫn đến phân hóa giai cấp.", "B. Những điều kiện tự nhiên và xã hội, dân cư.", "C. Quá trình giao lưu, buôn bán và mở rộng lãnh thổ.", "D. Có tín ngưỡng và tôn giáo nguyên thủy phát triển."], ans: 1 },
+            { id: 37, q: "Điểm tương đồng về sự ra đời của văn minh Ai Cập, văn minh Trung Hoa và văn minh Ấn Độ cổ đại?", opts: ["A. Có điều kiện tự nhiên thuận lợi, khép kín.", "B. Gắn với các dòng sông lớn có nhiều phù sa.", "C. Chữ viết xuất hiện thúc đẩy nhà nước ra đời.", "D. Nhà nước ra đời khi xã hội chưa có giai cấp."], ans: 1 },
+            { id: 38, q: "Người Ai Cập cổ đại tính được số pi bằng bao nhiêu", opts: ["A. 3,1416", "B. 3,1415", "C. 3,1413", "D. 3,1414"], ans: 0 },
+            { id: 39, q: "Tứ đại danh tác của nền văn học Trung Quốc thời Minh, Thanh là", opts: ["A. Tây du ký, Thủy hử, Hồng lâu mộng, Tam quốc diễn nghĩa.", "B. Tây du ký, Thủy hử, Hồng lâu mộng, Liêu trai chí dị.", "C. Tây du ký, Thủy hử, Đông Chu liệt quốc, Tam quốc diễn nghĩa.", "D. Tây du ký, Kim Vân Kiều, Hồng lâu mộng, Tam quốc diễn nghĩa."], ans: 0 },
+            { id: 40, q: "Cư dân Trung Hoa cổ - trung đại đã sáng tạo ra nhiều công trình kiến trúc nổi tiếng, còn lưu giữ đến ngày nay, nhưng không có công trình nào sau đây?", opts: ["A. Vạn Lý Trường Thành.", "B. Tượng Phật chùa Lạc Sơn.", "C. Tử Cấm Thành.", "D. Chùa hang ở A-gian-ta."], ans: 3 },
+            { id: 41, q: "Văn minh Phục hưng diễn ra trong khoảng thời gian nào sau đây?", opts: ["A. Thế kỉ XI – XII.", "B. Thế kỉ XVIII - XIX.", "C. Thế kỉ XV - XVII.", "D. Thế kỉ XIV - XVII."], ans: 3 },
+            { id: 42, q: "Phong trào Văn hóa Phục hưng ở Tây Âu ra đời trong bối cảnh nào sau đây?", opts: ["A. Tầng lớp tư sản Tây Âu tiến hành cách mạng lật đổ chế độ phong kiến.", "B. Giáo hội Hin-đu giáo lũng đoạn nền văn hóa, tư tưởng ở các nước Tây Âu.", "C. Những thành tựu văn minh Hy Lạp - La Mã cổ đại được chính quyền đề cao.", "D. Quan hệ sản xuất tư bản chủ nghĩa hình thành ở các nước Tây Âu."], ans: 3 },
+            { id: 43, q: "Đế chế Byzantium còn được gọi là", opts: ["A. Đế quốc Đông La Mã.", "B. Đế quốc Tây La Mã.", "C. Đế quốc La Mã thần thánh.", "D. Đế quốc La Mã phương Tây."], ans: 0 },
+            { id: 44, q: "Nội dung nào sau đây phản ánh đúng điều kiện tự nhiên của Hy Lạp - La Mã cổ đại?", opts: ["A. Có nhiều đồng bằng châu thổ màu mỡ ven sông.", "B. Có bờ biển dài, nhiều vũng vịnh với các hải cảng.", "C. Địa hình bằng phẳng, thuận lợi phát triển giao thông.", "D. Khí hậu nhiệt đới ẩm gió mùa, mưa quanh năm."], ans: 1 },
+            { id: 45, q: "Hai bộ sử thi nào sau đây đã đặt nền móng cho văn học Hy Lạp – La Mã cổ đại?", opts: ["A. I-li-át và Ô-đi-xê.", "B. A-chi-lút và Xô-phơ-clơ.", "C. Ma-ha-bha-ra-ta và Ra-ma-ya-na.", "D. Vua Ơ-đíp và những phụ nữ thành Tơ-roa."], ans: 0 },
+            { id: 46, q: "Triết học Hy Lạp cổ đại phát triển với các trường phái nào sau đây?", opts: ["A. Biện chứng và siêu hình.", "B. Duy vật và duy tâm.", "C. Hiện thực và lãng mạn.", "D. Chủ quan và khách quan."], ans: 1 },
+            { id: 47, q: "Việc đề cao chủ nghĩa duy vật khoa học có ý nghĩa nào sau đây đối với sự phát triển của châu Âu thời Phục hưng?", opts: ["A. Giúp con người hiểu đúng bản chất tự nhiên và quy luật phát triển của thế giới.", "B. Thúc đẩy giai cấp tư sản đấu tranh, cải tiến hệ tư tưởng của chế độ phong kiến.", "C. Giúp tư sản nhận thức đúng về bản chất bóc lột của Giáo hội Thiên Chúa giáo.", "D. Thúc đẩy quá trình xác lập và mở rộng hệ thống thuộc địa của chủ nghĩa tư bản."], ans: 0 },
+            { id: 48, q: "Nội dung nào sau đây không phản ánh đúng những nội dung cơ bản của phong trào văn hóa Phục hưng?", opts: ["A. Lên án, đả kích Giáo hội cơ đốc và giai cấp thống trị phong kiến.", "B. Đòi quyền tự do cá nhân và đề cao giá trị con người, tinh thần dân tộc.", "C. Giải phóng con người thoát khỏi trật tự, lễ giáo phong kiến thối nát.", "D. Đề cao nội dung và giáo lí Cơ đốc giáo cùng tư tưởng phong kiến."], ans: 3 },
+            { id: 49, q: "Bộ luật Hammurabi nổi tiếng là của quốc gia cổ đại nào?", opts: ["A. Lưỡng Hà.", "B. Cổ Babilon.", "C. Assyria.", "D. Tân Babilon."], ans: 1 },
+            { id: 50, q: "Những thành tựu khoa học, kĩ thuật của người Hy Lạp – La Mã cổ đại có ý nghĩa như thế nào?", opts: ["A. Là nguồn gốc của những thành tựu khoa học kĩ thuật phương Tây cổ đại.", "B. Đưa loài người bước vào kỉ nguyên công nghiệp hóa và hiện đại hóa.", "C. Đặt nền tảng cho sự phát triển của khoa học, kĩ thuật thế giới giai đoạn sau.", "D. Là một trong những cơ sở dẫn tới sự ra đời của văn minh phương Tây cổ đại."], ans: 2 }
+        ];
+
+        let questions = [];
+        let currentMode = 'practice'; // 'practice' or 'test'
+        let answeredQuestions = {};
+        let isSubmitted = false;
+
+        // Clone and Setup initial questions
+        function initQuestions() {
+            questions = rawQuestions.map(q => {
+                let options = [...q.opts];
+                return {
+                    id: q.id,
+                    q: q.q,
+                    options: options.map((opt, index) => ({ text: opt, isCorrect: index === q.ans }))
+                };
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Shuffle questions and their options
+        function shuffleQuizData() {
+            shuffleArray(questions);
+            questions.forEach(q => {
+                shuffleArray(q.options);
+            });
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            questions.forEach((question, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm question-block';
+                qDiv.id = `question-${question.id}`;
+                
+                let optsHtml = question.options.map((opt, optIndex) => `
+                    <button class="option-btn w-full text-left p-3 border rounded-md mb-2 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-75 disabled:cursor-not-allowed" 
+                            id="btn-${question.id}-${optIndex}"
+                            onclick="handleOptionSelect(${question.id}, ${optIndex})">
+                        ${opt.text.replace(/^[A-D]\. /, '')}
+                    </button>
+                `).join('');
+
+                qDiv.innerHTML = `
+                    <h3 class="font-bold text-lg mb-4 text-blue-900"><span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm mr-2">Câu ${index + 1}</span> ${question.q}</h3>
+                    <div class="options-container">
+                        ${optsHtml}
+                    </div>
+                    <div id="feedback-${question.id}" class="mt-2 text-sm font-semibold hidden"></div>
+                `;
+                container.appendChild(qDiv);
+            });
+
+            updateProgress();
+        }
+
+        function handleOptionSelect(qId, optIndex) {
+            if (isSubmitted && currentMode === 'test') return;
+            
+            const question = questions.find(q => q.id === qId);
+            const isCorrect = question.options[optIndex].isCorrect;
+            
+            // Xóa lựa chọn cũ
+            const optionsDiv = document.querySelector(`#question-${qId} .options-container`);
+            const buttons = optionsDiv.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('selected', 'correct', 'incorrect');
+                if (currentMode === 'practice') {
+                    btn.disabled = true; // Khóa các nút sau khi chọn trong chế độ luyện tập
+                }
+            });
+
+            // Đánh dấu đã chọn
+            const selectedBtn = document.getElementById(`btn-${qId}-${optIndex}`);
+            
+            if (currentMode === 'practice') {
+                answeredQuestions[qId] = isCorrect;
+                
+                if (isCorrect) {
+                    selectedBtn.classList.add('correct');
+                    showFeedback(qId, true, "Chính xác!");
+                } else {
+                    selectedBtn.classList.add('incorrect');
+                    // Tìm và tô màu đáp án đúng
+                    const correctIndex = question.options.findIndex(o => o.isCorrect);
+                    document.getElementById(`btn-${qId}-${correctIndex}`).classList.add('correct');
+                    showFeedback(qId, false, "Sai rồi. Đáp án màu xanh lá mới đúng.");
+                }
+            } else {
+                // Chế độ test
+                selectedBtn.classList.add('selected');
+                answeredQuestions[qId] = optIndex; // Lưu lại index đã chọn
+            }
+
+            updateProgress();
+        }
+
+        function showFeedback(qId, isCorrect, text) {
+            const fbDiv = document.getElementById(`feedback-${qId}`);
+            fbDiv.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            fbDiv.classList.add(isCorrect ? 'text-green-600' : 'text-red-600');
+            fbDiv.innerHTML = `<i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${text}`;
+        }
+
+        function updateProgress() {
+            const total = questions.length;
+            const answered = Object.keys(answeredQuestions).length;
+            document.getElementById('progress-text').innerText = `${answered} / ${total}`;
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            isSubmitted = false;
+            answeredQuestions = {};
+            
+            // Cập nhật UI Nút
+            const btnPractice = document.getElementById('mode-practice');
+            const btnTest = document.getElementById('mode-test');
+            
+            if (mode === 'practice') {
+                btnPractice.className = "px-4 py-2 rounded-md bg-white text-blue-700 font-semibold shadow transition";
+                btnTest.className = "px-4 py-2 rounded-md text-white hover:bg-blue-600 font-semibold transition";
+                document.getElementById('quiz-title').innerText = "Chế độ Luyện Tập";
+                document.getElementById('quiz-desc').innerText = "Chọn đáp án để xem kết quả ngay lập tức.";
+                document.getElementById('submit-section').classList.add('hidden');
+                document.getElementById('restart-section').classList.add('hidden');
+            } else {
+                btnTest.className = "px-4 py-2 rounded-md bg-white text-blue-700 font-semibold shadow transition";
+                btnPractice.className = "px-4 py-2 rounded-md text-white hover:bg-blue-600 font-semibold transition";
+                document.getElementById('quiz-title').innerText = "Chế độ Kiểm Tra";
+                document.getElementById('quiz-desc').innerText = "Làm hết tất cả các câu và ấn Nộp Bài ở cuối trang.";
+                document.getElementById('submit-section').classList.remove('hidden');
+                document.getElementById('restart-section').classList.add('hidden');
+            }
+            
+            restartQuiz(false);
+        }
+
+        function submitTest() {
+            if (Object.keys(answeredQuestions).length < questions.length) {
+                if(!confirm("Bạn chưa hoàn thành tất cả các câu hỏi. Vẫn muốn nộp bài?")) {
+                    return;
+                }
+            }
+
+            isSubmitted = true;
+            let score = 0;
+
+            questions.forEach(q => {
+                const selectedOptIndex = answeredQuestions[q.id];
+                const optionsDiv = document.querySelector(`#question-${q.id} .options-container`);
+                const buttons = optionsDiv.querySelectorAll('button');
+                
+                // Khóa tất cả nút
+                buttons.forEach(btn => btn.disabled = true);
+
+                const correctIndex = q.options.findIndex(o => o.isCorrect);
+
+                if (selectedOptIndex !== undefined) {
+                    if (q.options[selectedOptIndex].isCorrect) {
+                        score++;
+                        document.getElementById(`btn-${q.id}-${selectedOptIndex}`).classList.add('correct');
+                        showFeedback(q.id, true, "Đúng");
+                    } else {
+                        document.getElementById(`btn-${q.id}-${selectedOptIndex}`).classList.add('incorrect');
+                        document.getElementById(`btn-${q.id}-${correctIndex}`).classList.add('correct');
+                        showFeedback(q.id, false, "Sai");
+                    }
+                } else {
+                    document.getElementById(`btn-${q.id}-${correctIndex}`).classList.add('correct');
+                    showFeedback(q.id, false, "Chưa làm");
+                }
+            });
+
+            document.getElementById('submit-section').classList.add('hidden');
+            document.getElementById('restart-section').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function restartQuiz(doShuffle) {
+            isSubmitted = false;
+            answeredQuestions = {};
+            if (doShuffle) {
+                shuffleQuizData();
+            } else {
+                initQuestions();
+            }
+            renderQuestions();
+            document.getElementById('restart-section').classList.add('hidden');
+            if (currentMode === 'test') {
+                document.getElementById('submit-section').classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Khởi chạy khi load trang
+        initQuestions();
+        renderQuestions();
+
+    </script>
+</body>
+</html>
